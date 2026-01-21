@@ -1,16 +1,27 @@
 import React, { useRef, useState,useEffect } from "react";
 import { useSelector} from "react-redux";
-import { signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged} from "firebase/auth";
 import { auth } from "../utils/firebase";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from 'react-redux'
+import { addUser, removeUser } from '../utils/userSlice'
+import { LOGO } from "../utils/constants";
+import { toggleGptSearchView } from "../utils/gptSlice";
 
 const Header = () => {
   const user = useSelector((store) => store.user); // ✅ KEY LINE
-  console.log("user :",user)
+  const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
+  // console.log("user :",user)
   const [showMenu, setShowMenu] = useState(false)
   const menuRef = useRef(null)
 
   const navigate = useNavigate();
+  const dispatch = useDispatch()
+
+  const handleGPTSearchClick = () => {
+    //toggle GPT Search feature
+    dispatch(toggleGptSearchView())
+  }
 
   const handleSignOut = async () => {
     try {
@@ -18,10 +29,26 @@ const Header = () => {
       // dispatch(removeUser());
       navigate("/");
     } catch (error) {
-      console.error("Sign out error", error);
+      // console.error("Sign out error", error);
       navigate("/error")
     }
   };
+
+  useEffect(() => {
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const { uid, email, displayName, photoURL } = user;
+        dispatch(addUser({ uid, email, displayName, photoURL }))
+        navigate("/browse")
+      } else {
+        dispatch(removeUser())
+        navigate("/")
+      }
+     })
+
+      return () => unsubscribe(); // ✅ important
+  },[])
   
   useEffect(() => {
   const handleClickOutside = (e) => {
@@ -41,30 +68,36 @@ const Header = () => {
       {/* Netflix Logo */}
       <img
         className="w-44"
-        src="https://help.nflxext.com/helpcenter/OneTrust/oneTrust_production_2026-01-09/consent/87b6a5c0-0104-4e96-a291-092c11350111/019ae4b5-d8fb-7693-90ba-7a61d24a8837/logos/dd6b162f-1a32-456a-9cfe-897231c7763c/4345ea78-053c-46d2-b11e-09adaef973dc/Netflix_Logo_PMS.png"
+        src={LOGO}
         alt="Netflix Logo"
       />
 
       {/* Show ONLY if user is logged in */}
       {user && (
-        <div className="relative" ref={menuRef}>
+        <div className="relative flex items-center gap-4">
+          <button className="mr-4 rounded bg-red-700 px-4 py-2 text-white hover:bg-red-600 transition"
+          onClick={handleGPTSearchClick}>
+            {showGptSearch ? "Home Page" : "GPT Search"}
+          </button>
+         <div className="relative" ref={menuRef}>
           <img
             onClick={() => setShowMenu(!showMenu)}
             className="h-12 w-12 cursor-pointer rounded"
-            src="https://assets.leetcode.com/users/dpk_ptdr/avatar_1750879819.png"
+            src={user.photoURL}
             alt={user.displayName}
           />
 
           {showMenu && (
-            <div className="absolute right-0 mt-2 w-28 rounded bg-black py-2 text-sm shadow-lg">
+            <div className="absolute right-0 mt-2 w-28 rounded bg-red-700 py-2 text-sm shadow-lg">
               <button
                 onClick={handleSignOut}
-                className="w-full px-4 py-2 text-left text-white hover:bg-gray-700"
+                className="w-full px-4 py-2 text-left text-white hover:bg-red-600 transition"
               >
                 Sign out
               </button>
             </div>
           )}
+          </div>
         </div>
       )}
     </div>
