@@ -1,104 +1,163 @@
 import React, { useState, useRef, useEffect } from "react";
 
 const VideoBackground = ({ movie }) => {
-  const [isVideoReady, setIsVideoReady] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
+//   const [isVideoReady, setIsVideoReady] = useState(false);
+//   const [isVisible, setIsVisible] = useState(false);
 
-  const containerRef = useRef(null);
+//   const containerRef = useRef(null);
+//   const videoRef = useRef(null);
+
+//   const videoUrl = movie.playbackURLs?.find(
+//     (v) => v.videoMimeType === "MP4"
+//   )?.url;
+
+//   const fallbackImage = movie.primaryTitle?.primaryImage?.url;
+
+//   const shouldDisableVideo =
+//     window.innerWidth < 768 ||
+//     navigator.connection?.saveData === true;
+
+//   /* ------------------------------
+//      Intersection Observer
+//   -------------------------------*/
+//   useEffect(() => {
+//     const observer = new IntersectionObserver(
+//       ([entry]) => {
+//         setIsVisible(entry.isIntersecting);
+//       },
+//       { threshold: 0.4 }
+//     );
+
+//     if (containerRef.current) {
+//       observer.observe(containerRef.current);
+//     }
+
+//     return () => observer.disconnect();
+//   }, []);
+
+//   /* ------------------------------
+//      Play / Pause video
+//   -------------------------------*/
+//   useEffect(() => {
+//     if (!videoRef.current) return;
+
+//     if (isVisible && !shouldDisableVideo) {
+//       videoRef.current.play().catch(() => {});
+//     } else {
+//       videoRef.current.pause();
+//     }
+//   }, [isVisible, shouldDisableVideo]);
+
+//   /* ------------------------------
+//      Stop video after 15s
+//   -------------------------------*/
+//   useEffect(() => {
+//     if (!isVisible || shouldDisableVideo) return;
+
+//     const timer = setTimeout(() => {
+//       videoRef.current?.pause();
+//     }, 15000);
+
+//     return () => clearTimeout(timer);
+//   }, [isVisible, shouldDisableVideo]);
+
+//   /* ------------------------------
+//      Mobile / Data saver fallback
+//   -------------------------------*/
+//   if (shouldDisableVideo) {
+//     return (
+//       <img
+//         src={fallbackImage}
+//         alt="movie poster"
+//         className="w-full h-screen object-cover"
+//       />
+//     );
+//   }
   const videoRef = useRef(null);
-
-  const videoUrl = movie.playbackURLs?.find(
-    (v) => v.videoMimeType === "MP4"
-  )?.url;
-
-  const fallbackImage = movie.primaryTitle?.primaryImage?.url;
+  const [ready, setReady] = useState(false);
 
   const shouldDisableVideo =
-    window.innerWidth < 768 ||
-    navigator.connection?.saveData === true;
+    window.innerWidth < 768 || navigator.connection?.saveData;
 
-  /* ------------------------------
-     Intersection Observer
-  -------------------------------*/
+  // ⏸ stop after 15s
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
-      { threshold: 0.4 }
-    );
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  /* ------------------------------
-     Play / Pause video
-  -------------------------------*/
-  useEffect(() => {
-    if (!videoRef.current) return;
-
-    if (isVisible && !shouldDisableVideo) {
-      videoRef.current.play().catch(() => {});
-    } else {
-      videoRef.current.pause();
-    }
-  }, [isVisible, shouldDisableVideo]);
-
-  /* ------------------------------
-     Stop video after 15s
-  -------------------------------*/
-  useEffect(() => {
-    if (!isVisible || shouldDisableVideo) return;
+    if (shouldDisableVideo) return;
 
     const timer = setTimeout(() => {
       videoRef.current?.pause();
     }, 15000);
 
     return () => clearTimeout(timer);
-  }, [isVisible, shouldDisableVideo]);
+  }, []);
 
-  /* ------------------------------
-     Mobile / Data saver fallback
-  -------------------------------*/
+  // ⏸ pause when out of view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          videoRef.current?.pause();
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (videoRef.current) observer.observe(videoRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   if (shouldDisableVideo) {
     return (
       <img
-        src={fallbackImage}
-        alt="movie poster"
-        className="w-full h-screen object-cover"
+        src={movie.poster}
+        className="absolute inset-0 w-full h-full object-cover"
+        alt={movie.title}
       />
     );
   }
-
   return (
-    <div
-      ref={containerRef}
-      className="absolute inset-0 overflow-hidden"
-    >
+    // <div
+    //   ref={containerRef}
+    //   className="absolute inset-0 overflow-hidden"
+    // >
+    //   {/* Poster */}
+    //   <img
+    //     src={fallbackImage}
+    //     alt="movie poster"
+    //     className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+    //       isVideoReady ? "opacity-0" : "opacity-100"
+    //     }`}
+    //   />
+
+    //   {/* Video */}
+    //   <video
+    //     ref={videoRef}
+    //     className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+    //       isVideoReady ? "opacity-100" : "opacity-0"
+    //     }`}
+    //     src={videoUrl}
+    //     muted
+    //     loop
+    //     playsInline
+    //     onCanPlay={() => setIsVideoReady(true)}
+    //   />
+    <div className="absolute inset-0 overflow-hidden">
       {/* Poster */}
       <img
-        src={fallbackImage}
-        alt="movie poster"
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-          isVideoReady ? "opacity-0" : "opacity-100"
-        }`}
+        src={movie.poster}
+        className={`absolute inset-0 w-full h-full object-cover
+          transition-opacity duration-700 ${ready ? "opacity-0" : "opacity-100"}`}
       />
 
       {/* Video */}
       <video
         ref={videoRef}
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-          isVideoReady ? "opacity-100" : "opacity-0"
-        }`}
-        src={videoUrl}
+        src={movie.video}
+        autoPlay
         muted
-        loop
         playsInline
-        onCanPlay={() => setIsVideoReady(true)}
+        onCanPlay={() => setReady(true)}
+        className={`absolute inset-0 w-full h-full object-cover
+          transition-opacity duration-700 ${ready ? "opacity-100" : "opacity-0"}`}
       />
 
       {/* Dark overlay */}

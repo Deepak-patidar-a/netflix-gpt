@@ -1,10 +1,10 @@
 import React from "react";
 
 const VideoTitle = ({ movie }) => {
-  const title = movie.primaryTitle?.titleText?.text;
-  const description = movie.description?.value;
-  const rating = movie.primaryTitle?.ratingsSummary?.aggregateRating;
-  const year = movie.primaryTitle?.releaseYear?.year;
+  const title = movie?.title;
+  const description = movie?.description;
+  const rating = movie?.rating;
+  const year = movie?.year;
 
   return (
     <div className="absolute bottom-24 left-12 z-20 max-w-xl text-white">

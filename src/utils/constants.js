@@ -8,7 +8,7 @@ export const URL = 'https://imdb146.p.rapidapi.com/v1/video/?id=vi2557478681';
 export const OPTIONS = {
 	method: 'GET',
 	headers: {
-		'x-rapidapi-key': 'ad1239e518mshd7884167f75af45p116ca8jsn0b4579a7d86a',
+		'x-rapidapi-key': import.meta.env.VITE_RAPID_API_KEY,
 		'x-rapidapi-host': 'imdb146.p.rapidapi.com'
 	}
 };
