@@ -1,7 +1,8 @@
-import { useSelector } from "react-redux";
+import { shallowEqual, useSelector } from "react-redux";
 
 const GPTMovieSuggetion = () => {
-  const { movies, isLoading } = useSelector((store) => store.gptMovies);
+  const movies = useSelector((store) => store.gptMovies.movies, shallowEqual);
+  const isLoading = useSelector((store) => store.gptMovies.isLoading);
 
   const showSkeleton = isLoading || movies.length === 0;
 

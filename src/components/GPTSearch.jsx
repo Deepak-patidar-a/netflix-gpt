@@ -1,6 +1,8 @@
-import GPTMovieSuggetion from "./GPTMovieSuggetion";
-import GPTSearchBar from "./GPTSearchBar";
 import { BACKGROUND_IMAGE_URL } from "../utils/constants";
+import { lazy, Suspense } from "react";
+
+const GPTSearchBar = lazy(() => import("./GPTSearchBar"));
+const GPTMovieSuggetion = lazy(() => import("./GPTMovieSuggetion"));
 
 const GPTSearch = () => {
   return (
@@ -26,8 +28,10 @@ const GPTSearch = () => {
 
       {/* content */}
       <div className="relative z-10 pt-32 px-6">
-        <GPTSearchBar />
-        <GPTMovieSuggetion />
+        <Suspense fallback={<div className="text-white">Loading search...</div>}>
+            <GPTSearchBar />
+            <GPTMovieSuggetion />
+        </Suspense>
       </div>
     </div>
   );

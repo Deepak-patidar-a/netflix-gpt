@@ -3,16 +3,18 @@ import Header from './Header'
 import useNowPlayingMovies from '../hooks/useNowPlayingMovies'
 import MainContainer from './MainContainer'
 import SecondaryContainer from './SecondaryContainer'
-import GPTSearch from './GPTSearch'
-import MyList from './MyList'
 import { useSelector } from 'react-redux'
 import Toast from './Toast'
+import { lazy, Suspense } from "react";
+
+const GPTSearch = lazy(() => import("./GPTSearch"));
+const MyList = lazy(() => import("./MyList"));
 
 
 const Browse = () => {
-  const { showGptSearch, showMyList } = useSelector(
-  (store) => store.gpt
-  );
+  const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
+  const showMyList = useSelector((store) => store.gpt.showMyList);
+  //not as object destructuring to avoid re-rendering issues
   useNowPlayingMovies()
 
 
@@ -24,11 +26,27 @@ const Browse = () => {
       to-[#0d0d0d]">
       <Header/>
       {showGptSearch ? (
-      <GPTSearch />
+      <Suspense
+        fallback={
+          <div className="pt-32 text-center text-white">
+            Loading GPT Search...
+          </div>
+        }
+      >
+        <GPTSearch />
+      </Suspense>
     ) : showMyList ? (
       <>
         <Toast/>
+        <Suspense
+        fallback={
+          <div className="pt-32 text-center text-white">
+            Loading My List...
+          </div>
+        }
+        >
         <MyList />
+        </Suspense>
       </>
     ) : (
       <>
