@@ -4,11 +4,15 @@ import useNowPlayingMovies from '../hooks/useNowPlayingMovies'
 import MainContainer from './MainContainer'
 import SecondaryContainer from './SecondaryContainer'
 import GPTSearch from './GPTSearch'
+import MyList from './MyList'
 import { useSelector } from 'react-redux'
+import Toast from './Toast'
 
 
 const Browse = () => {
-  const showGptSearch = useSelector((store) => store.gpt.showGptSearch)
+  const { showGptSearch, showMyList } = useSelector(
+  (store) => store.gpt
+  );
   useNowPlayingMovies()
 
 
@@ -19,14 +23,18 @@ const Browse = () => {
       via-[#141414]
       to-[#0d0d0d]">
       <Header/>
-      {showGptSearch ? 
-      (
-      <GPTSearch/>
-    ) :
-      (
+      {showGptSearch ? (
+      <GPTSearch />
+    ) : showMyList ? (
       <>
-      <MainContainer/>
-      <SecondaryContainer />
+        <Toast/>
+        <MyList />
+      </>
+    ) : (
+      <>
+        <Toast/>
+        <MainContainer />
+        <SecondaryContainer />
       </>
     )}
     </div>

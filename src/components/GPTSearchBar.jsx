@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef , useState} from "react";
 import client from "../utils/openAi";
 import { useDispatch } from "react-redux";
 import { fetchGptMoviesFailure, fetchGptMoviesStart, fetchGptMoviesSuccess } from "../utils/gptMovieSlice";
@@ -6,11 +6,20 @@ import { fetchGptMoviesFailure, fetchGptMoviesStart, fetchGptMoviesSuccess } fro
 const GPTSearchBar = () => {
     const searchText = useRef(null);
     const dispatch = useDispatch()
+    const [searching, setSearching] = useState(false);
     
 
     const handleSearchGPT = async () => { 
         // console.log(searchText.current.value);
         //make an api call to openAI with the search text
+        const query = searchText.current?.value.trim();
+
+    // 🚫 1. Empty input → no API call
+        if (!query || searching) return;
+        try {
+        setSearching(true);
+        dispatch(fetchGptMoviesStart());
+
         const gptPrompt = `You are a strict JSON API that returns movie recommendations.
 
             User Query:
@@ -55,14 +64,15 @@ const GPTSearchBar = () => {
             ],
             });
             //console.log("gptResult :",gptResult.choices[0].message.content);
-            dispatch(fetchGptMoviesStart());
+            // dispatch(fetchGptMoviesStart());
 
-            try {
             const json = JSON.parse(gptResult.choices[0].message.content);
             // console.log("Parsed JSON :",json);
             dispatch(fetchGptMoviesSuccess(json.results));
             } catch (err) {
             dispatch(fetchGptMoviesFailure("Invalid GPT response"));
+            }finally{
+            setSearching(false);
             }
      }
 
@@ -76,10 +86,19 @@ const GPTSearchBar = () => {
           placeholder="What would you like to watch today?"
           className="flex-1 px-4 py-3 rounded-md bg-gray-900 text-white outline-none"
         />
-        <button className="px-6 py-3 bg-red-700 rounded-md text-white font-semibold"
-        onClick={handleSearchGPT}
+        <button
+          type="button"
+          onClick={handleSearchGPT}
+          disabled={searching}
+          className={`px-6 py-3 rounded-md text-white font-semibold
+            transition
+            ${
+              searching
+                ? "bg-red-700/50 cursor-not-allowed"
+                : "bg-red-700 hover:bg-red-800"
+            }`}
         >
-          Search
+          {searching ? "Searching..." : "Search"}
         </button>
       </form>
     </div>

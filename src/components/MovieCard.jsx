@@ -1,9 +1,17 @@
-import { Play, Plus, ThumbsUp } from "lucide-react";
+import { Play, Plus, ThumbsUp, Check} from "lucide-react";
 import { useState, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { addToMyList, removeFromMyList } from "../utils/myListSlice";
+import { showToast } from "../utils/toastSlice";
 
 const MovieCard = ({ movie }) => {
   const [isHovered, setIsHovered] = useState(false);
   const hoverTimer = useRef(null);
+  const dispatch = useDispatch();
+  const myList = useSelector((store) => store.myList.movies);
+  const isInMyList = myList.some((m) => m.id === movie.id);
+
+  const isAdded = myList.some((m) => m.id === movie.id);
 
   if (!movie?.poster) return null;
 
@@ -59,9 +67,44 @@ const MovieCard = ({ movie }) => {
                   <Play size={18} className="text-black ml-0.5" />
                 </button>
 
-                <button className="h-8 w-8 rounded-full border border-white/40 flex items-center justify-center">
-                  <Plus size={16} className="text-white" />
-                </button>
+                {isInMyList ? (
+                    <button
+                        onClick={(e) => {
+                        e.stopPropagation();
+                        dispatch(removeFromMyList(movie.id));
+                        dispatch(
+                        showToast({
+                            message: "Removed from My List",
+                            type: "info",
+                        })
+                        );
+                        }}
+                        className="h-8 w-8 rounded-full
+                                bg-emerald-500 flex items-center justify-center"
+                        title="Remove from My List"
+                    >
+                        <Check size={16} className="text-black" />
+                    </button>
+                    ) : (
+                    <button
+                        onClick={(e) => {
+                        e.stopPropagation();
+                        dispatch(addToMyList(movie))
+                        dispatch(
+                        showToast({
+                            message: "Added to My List",
+                            type: "success",
+                        })
+                        );
+                        }}
+                        className="h-8 w-8 rounded-full
+                                border border-white/40
+                                flex items-center justify-center"
+                        title="Add to My List"
+                    >
+                        <Plus size={16} className="text-white" />
+                    </button>
+                    )}
 
                 <button className="h-8 w-8 rounded-full border border-white/40 flex items-center justify-center">
                   <ThumbsUp size={16} className="text-white" />

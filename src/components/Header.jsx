@@ -6,11 +6,15 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from 'react-redux'
 import { addUser, removeUser } from '../utils/userSlice'
 import { LOGO } from "../utils/constants";
-import { toggleGptSearchView } from "../utils/gptSlice";
+import { toggleGptSearchView, toggleMyList } from "../utils/gptSlice";
 
 const Header = () => {
   const user = useSelector((store) => store.user); // ✅ KEY LINE
-  const showGptSearch = useSelector((store) => store.gpt.showGptSearch);
+  const {showGptSearch , showMyList}= useSelector((store) => store.gpt);
+  const myListCount = useSelector(
+  (store) => store.myList.movies.length
+  );
+
   // console.log("user :",user)
   const [showMenu, setShowMenu] = useState(false)
   const menuRef = useRef(null)
@@ -79,19 +83,38 @@ const Header = () => {
           onClick={handleGPTSearchClick}>
             {showGptSearch ? "Home Page" : "GPT Search"}
           </button>
+          <button
+            onClick={() => dispatch(toggleMyList())}
+            className="mr-4 px-4 py-2 rounded
+                      bg-red-700 hover:bg-red-600
+                      transition text-white"
+          >
+            {showMyList ? "Home Page" : myListCount > 0 ? `My List (${myListCount})` : "My List"}
+          </button>
          <div className="relative" ref={menuRef}>
+            <div
+              className="relative flex items-center gap-1 cursor-pointer"
+              onClick={() => setShowMenu((prev) => !prev)}
+            >
           <img
-            onClick={() => setShowMenu(!showMenu)}
             className="h-12 w-12 cursor-pointer rounded"
             src={user.photoURL}
             alt={user.displayName}
           />
+          {/* Arrow */}
+          <span
+            className={`text-white text-sm transition-transform duration-200
+              ${showMenu ? "rotate-180" : "rotate-0"}`}
+          >
+            ▼
+          </span>
+          </div>
 
           {showMenu && (
-            <div className="absolute right-0 mt-2 w-28 rounded bg-red-700 py-2 text-sm shadow-lg">
+            <div className="absolute right-0 mt-2 w-28 py-2 text-base shadow-lg">
               <button
                 onClick={handleSignOut}
-                className="w-full px-4 py-2 text-left text-white hover:bg-red-600 transition"
+                className="w-full px-4 py-2 text-center rounded  text-white  bg-red-700 hover:bg-red-600 transition"
               >
                 Sign out
               </button>
