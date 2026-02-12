@@ -1,26 +1,22 @@
-import { useRef , useState} from "react";
+import { useRef, useState } from "react";
 import client from "../utils/openAi";
 import { useDispatch } from "react-redux";
 import { fetchGptMoviesFailure, fetchGptMoviesStart, fetchGptMoviesSuccess } from "../utils/gptMovieSlice";
 
 const GPTSearchBar = () => {
-    const searchText = useRef(null);
-    const dispatch = useDispatch()
-    const [searching, setSearching] = useState(false);
-    
+  const searchText = useRef(null);
+  const dispatch = useDispatch();
+  const [searching, setSearching] = useState(false);
 
-    const handleSearchGPT = async () => { 
-        // console.log(searchText.current.value);
-        //make an api call to openAI with the search text
-        const query = searchText.current?.value.trim();
+  const handleSearchGPT = async () => {
+    const query = searchText.current?.value.trim()
+    if (!query || searching) return
 
-    // 🚫 1. Empty input → no API call
-        if (!query || searching) return;
-        try {
-        setSearching(true);
-        dispatch(fetchGptMoviesStart());
+    try {
+      setSearching(true);
+      dispatch(fetchGptMoviesStart())
 
-        const gptPrompt = `You are a strict JSON API that returns movie recommendations.
+      const gptPrompt = `You are a strict JSON API that returns movie recommendations.
 
             User Query:
             "${searchText.current.value}"
@@ -47,7 +43,7 @@ const GPTSearchBar = () => {
                 "genre": "Drama",
                 "ai_tagline": "3-4 word tagline",
                 "ai_reason": "Short 1-2 line reason",
-                "confidence": "high" // high | medium | low
+                "confidence": "high"
                 }
             ]
             }
@@ -57,48 +53,82 @@ const GPTSearchBar = () => {
             "results": []
             }`;
 
-        const gptResult = await client.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [
-                { role: 'user', content: gptPrompt }
-            ],
-            });
-            //console.log("gptResult :",gptResult.choices[0].message.content);
-            // dispatch(fetchGptMoviesStart());
+      const gptResult = await client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: gptPrompt }],
+      })
 
-            const json = JSON.parse(gptResult.choices[0].message.content);
-            // console.log("Parsed JSON :",json);
-            dispatch(fetchGptMoviesSuccess(json.results));
-            } catch (err) {
-            dispatch(fetchGptMoviesFailure("Invalid GPT response"));
-            }finally{
-            setSearching(false);
-            }
-     }
-
+      const json = JSON.parse(gptResult.choices[0].message.content)
+      dispatch(fetchGptMoviesSuccess(json.results))
+    } catch (err) {
+      dispatch(fetchGptMoviesFailure("Invalid GPT response"))
+    } finally {
+      setSearching(false)
+    }
+  }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <form className="flex gap-2 bg-black/70 p-4 rounded-lg" onSubmit={(e) => e.preventDefault()}>
+    <div className="w-full max-w-3xl mx-auto">
+
+      <h2 className="text-white text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 text-center">
+        🎬 What would you like to watch?
+      </h2>
+
+      <form
+        className="flex flex-col sm:flex-row gap-2 sm:gap-3
+          bg-black/70 p-3 sm:p-4
+          rounded-lg shadow-lg"
+        onSubmit={(e) => e.preventDefault()}
+      >
         <input
-            ref={searchText}
+          ref={searchText}
           type="text"
-          placeholder="What would you like to watch today?"
-          className="flex-1 px-4 py-3 rounded-md bg-gray-900 text-white outline-none"
+          placeholder="e.g. Something like Inception..."
+          className="flex-1 px-4
+            py-3 sm:py-3
+            rounded-md bg-gray-900 text-white text-sm sm:text-base
+            placeholder-gray-500
+            outline-none focus:ring-2 focus:ring-red-600
+            transition"
         />
+
         <button
           type="button"
           onClick={handleSearchGPT}
           disabled={searching}
-          className={`px-6 py-3 rounded-md text-white font-semibold
-            transition
-            ${
-              searching
-                ? "bg-red-700/50 cursor-not-allowed"
-                : "bg-red-700 hover:bg-red-800"
+          className={`w-full sm:w-auto
+            px-5 sm:px-6 py-3
+            rounded-md text-white text-sm sm:text-base font-semibold
+            transition active:scale-95
+            ${searching
+              ? "bg-red-700/50 cursor-not-allowed"
+              : "bg-red-700 hover:bg-red-800"
             }`}
         >
-          {searching ? "Searching..." : "Search"}
+          {searching ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg
+                className="animate-spin h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12" cy="12" r="10"
+                  stroke="currentColor" strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                />
+              </svg>
+              Searching...
+            </span>
+          ) : (
+            "Search"
+          )}
         </button>
       </form>
     </div>

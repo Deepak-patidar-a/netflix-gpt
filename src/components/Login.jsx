@@ -67,7 +67,6 @@ const Login = () => {
         })
           const { uid,userEmail,displayName,photoURL} = auth.currentUser
           dispatch(addUser({uid : uid, email: userEmail, displayName : displayName, photoURL: photoURL}))
-          // console.log("Signup success:", userCredential.user)
           
       } else {
         // SIGN IN
@@ -76,11 +75,8 @@ const Login = () => {
           email,
           password
         );
-
-        // console.log("Signin success:", userCredential.user)
       }
     } catch (error) {
-      // console.error("Auth error:", error.code, error.message);
       setErrors({ auth: error.message })
     } finally {
       setIsLoading(false)
@@ -89,23 +85,24 @@ const Login = () => {
 
 
   return (
-    <div className="relative h-screen w-full bg-black">
+    <div className="relative min-h-screen w-full bg-black">
       <Header />
 
       <img
         src={BACKGROUND_IMAGE_URL}
         alt="background"
-        className="absolute inset-0 h-full w-full object-cover opacity-70"
+        className="absolute inset-0 h-full w-full object-cover opacity-70 hidden md:block"
       />
+      <div className="absolute inset-0 bg-black/40 hidden md:block" />
 
-      <div className="absolute inset-0 bg-black/40" />
 
-      <div className="relative z-10 flex h-full items-center justify-center">
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-16 sm:px-6">
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-md rounded-md bg-black/75 p-8 text-white"
+          className="w-full max-w-sm sm:max-w-md rounded-md bg-black/80 md:bg-black/75 p-6 sm:p-8 md:p-10 text-white shadow-lg"
         >
-          <h1 className="mb-6 text-3xl font-bold">
+  
+          <h1 className="mb-6 text-2xl sm:text-3xl font-bold">
             {isSignIn ? "Sign In" : "Sign Up"}
           </h1>
 
@@ -119,7 +116,7 @@ const Login = () => {
                 onChange={(e) => setFullName(e.target.value)}
               />
               {errors.fullName && (
-                <p className="mb-2 text-xs text-red-500">
+                <p className="mb-3 text-xs text-red-500">
                   {errors.fullName}
                 </p>
               )}
@@ -134,13 +131,14 @@ const Login = () => {
             onChange={(e) => setEmail(e.target.value)}
           />
           {errors.email && (
-            <p className="mb-2 text-xs text-red-500">{errors.email}</p>
+            <p className="mb-3 text-xs text-red-500">{errors.email}</p>
           )}
 
+          {/* ✅ Password field */}
           <input
             type="password"
             placeholder="Password"
-            className="mb-6 w-full rounded bg-gray-700 px-4 py-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600"
+            className="mb-4 w-full rounded bg-gray-700 px-4 py-3 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -151,8 +149,8 @@ const Login = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className={`mb-4 w-full rounded bg-red-600 py-3 font-semibold transition
-              ${isLoading ? "cursor-not-allowed opacity-60" : "hover:bg-red-700"}
+            className={`mb-4 mt-2 w-full rounded bg-red-600 py-3 text-sm sm:text-base font-semibold transition
+              ${isLoading ? "cursor-not-allowed opacity-60" : "hover:bg-red-700 active:bg-red-800"}
             `}
           >
             {isLoading
@@ -163,17 +161,17 @@ const Login = () => {
               ? "Sign In"
               : "Sign Up"}
           </button>
+
           {errors.auth && (
             <p className="mb-4 text-xs text-red-500">{errors.auth}</p>
           )}
 
           {isSignIn && (
-            <div className="flex items-center justify-between text-sm text-gray-400">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" className="accent-gray-500" />
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-gray-400">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" className="accent-gray-500 w-4 h-4" />
                 Remember me
               </label>
-
               <span className="cursor-pointer hover:underline">
                 Forgot password?
               </span>
@@ -187,13 +185,12 @@ const Login = () => {
                 setIsSignIn(!isSignIn);
                 setErrors({});
               }}
-              className="cursor-pointer text-white hover:underline"
+              className="cursor-pointer text-white font-medium hover:underline"
             >
               {isSignIn ? "Sign up now." : "Sign in now."}
             </span>
           </p>
-
-          <p className="mt-4 text-xs text-gray-500">
+          <p className="mt-4 text-xs text-gray-500 leading-relaxed">
             This page is protected by Google reCAPTCHA to ensure you're not a bot.{" "}
             <span className="cursor-pointer text-blue-500 hover:underline">
               Learn more.
